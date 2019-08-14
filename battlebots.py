@@ -163,6 +163,10 @@ pygame.mixer.music.load(bgmusic)
 pygame.mixer.music.set_volume(0.8)
 pygame.mixer.music.play()
 
+# Music credits/attribution
+print("Music by Eric Matyas")
+print("www.soundimage.org")
+
 # GAME STATE & PLAYER SETUP
 player_1_bullets = []
 player_2_bullets = []
