@@ -1,0 +1,76 @@
+# Author: Jason Taylor 2019
+# Copyright (c) Jason Taylor.
+
+INTRODUCTION:
+
+Battle Bots is a simple game where two ships (bots) battle each other. It is built in python and is designed to be
+a fun way for teams to practice learning and coding in python. Two different bots are coded by different people and
+then the bots compete by trying to destroy each other.
+
+RULES/INFO:
+
+1. The grid or screen (battle arena) is 800 x 600 with (0,0) being in the upper left corner.
+2. Locations (x,y), distances, speeds, etc are in pixels or pixels per second.
+3. Each bot is given a chance to take action (change direction, speed, shoot) 4 times per second.
+4. With each 'turn' the bot is given game information that includes:
+    a. The enemy bot's position, direction, speed, etc.
+    b. It's own position, direction, speed, etc.
+5. The bot is then expected to return an 'action' to the game. An action consists of:
+    a. What direction and speed the bot wants to go.
+    b. If the bot should fire a weapon and in what direction.
+6. A bot starts with a health of 10. When it reaches 0 it is dead and the match ends.
+7. A match consists of two bots for 2 minutes. At the end of 2 minutes the bot with the most health wins.
+    a. Player 1 starts on the left of the screen (100,300)
+    b. Player 2 starts on the right of the screen (700,300)
+    c. If the bots collide the one with the most health will destroy the other, same health they're both destroyed.
+8. A bot has 2 weapons (Phasers & Torpedoes).
+    a. Phasers cost 1 energy to shoot. The bot starts out with 5 energy and regenerates 1 energy per second. Phasers
+        do 1 damage to an enemy if hit (enemy health = enemy health -1).
+    b. Torpedoes don't cost energy, but you only have 5. They do 5 damage to an enemy if hit.
+    c. A bot can only shoot a phaser or a torpedo once per turn (0.25 sec).
+    d. Phasers travel at 400 pps (pixels per second).
+    e. Torpedoes travel at 300 pps.
+    f. Your phasers or torpedos can intercept enemy bullets, and vice versa.
+9. A bot can move at any speed between 0 pps and 150 pps. It can move in any direction.
+10. Directions are a 'heading' in degrees. Starting with 0 (right or east) and rotating counter clockwise, see below:
+                90
+                |
+       180 -----|----- 0
+                |
+                |
+               270
+
+CREATING A BOT:
+
+Creating a bot is easy. See the provided examples (samplebot1.py & samplebot2.py).
+
+1. Create a python file for your bot, example: myfirstbot.py
+2. Import the included battlebotspublic.py
+3. Define a class called MyBot that inherits from battlebotspublic.PlayerBot.
+    a. example: 'class MyBot(battlebotspublic.PlayerBot)'
+4. Define instance methods 'get_name(self)' and 'take_turn(self, info)'
+    a. 'get_name' should return a string, just the name of your bot.
+    b. 'take_turn' is called by the game every 0.25 seconds. The 'info' that is passed into this
+        method is a 'TurnInfo' object (defined in battlebotspublic.py). TurnInfo has all
+        the info your bot needs (enemy information, etc). Use this info to decide what you
+        want your bot to do (where to move, how fast, shoot?, etc). A 'TurnAction' object (defined in
+        battlebotspublic.py) should be returned from this method. TurnAction defines what actions you
+        want your bot to take.
+    c. You can create other methods to support your bot's strategy, etc.
+    d. Your bot cannot go off the game screen, if it tries it's speed will be reduced to 0 (aka: it won't move till
+       the next turn.
+    e. Bots are not allowed to create threads, import battlebots.py or access any other game information besides
+       what is in the TurnInfo object. Persistence is also not allowed, as is any IO (writing files, etc). Please keep
+       any data you want in memory as to not affect game performance.
+
+
+RUNNING THE GAME:
+
+Usage: battlebots.py <player1bot> <player2bot>
+Example: battlebots.py samplebot1 samplebot2
+
+
+REQUIREMENTS:
+
+1. Battle Bots uses python 3 (3.7 was current at time of writing).
+2. Battle Bots uses pygame (pip install pygame).
