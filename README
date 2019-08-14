@@ -48,18 +48,19 @@ Creating a bot is easy. See the provided examples (samplebot1.py & samplebot2.py
 2. Import the included battlebotspublic.py
 3. Define a class called MyBot that inherits from battlebotspublic.PlayerBot.
     a. example: 'class MyBot(battlebotspublic.PlayerBot)'
-4. Define instance methods 'get_name(self)' and 'take_turn(self, info)'
+4. Define instance methods 'get_name(self)' and 'take_turn(self, info)' and 'get_image(self)'
     a. 'get_name' should return a string, just the name of your bot.
-    b. 'take_turn' is called by the game every 0.25 seconds. The 'info' that is passed into this
+    b. 'get_image' is optional and if used should return the name of your bot's png file (must be 26x28 pixels).
+    c. 'take_turn' is called by the game every 0.25 seconds. The 'info' that is passed into this
         method is a 'TurnInfo' object (defined in battlebotspublic.py). TurnInfo has all
         the info your bot needs (enemy information, etc). Use this info to decide what you
         want your bot to do (where to move, how fast, shoot?, etc). A 'TurnAction' object (defined in
         battlebotspublic.py) should be returned from this method. TurnAction defines what actions you
         want your bot to take.
-    c. You can create other methods to support your bot's strategy, etc.
-    d. Your bot cannot go off the game screen, if it tries it's speed will be reduced to 0 (aka: it won't move till
+    d. You can create other methods to support your bot's strategy, etc.
+    e. Your bot cannot go off the game screen, if it tries it's speed will be reduced to 0 (aka: it won't move till
        the next turn.
-    e. Bots are not allowed to create threads, import battlebots.py or access any other game information besides
+    f. Bots are not allowed to create threads, import battlebots.py or access any other game information besides
        what is in the TurnInfo object. Persistence is also not allowed, as is any IO (writing files, etc). Please keep
        any data you want in memory as to not affect game performance.
 

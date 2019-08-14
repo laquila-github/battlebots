@@ -73,3 +73,7 @@ class PlayerBot(ABC):
     @abstractmethod
     def get_name(self):
         return None
+
+    # If overridden it should return the file name of your bot's image (26x28 png)
+    def get_image(self):
+        return None

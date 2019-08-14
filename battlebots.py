@@ -179,10 +179,29 @@ p2_lib = importlib.import_module(sys.argv[2])
 player_2_ai = p2_lib.MyBot()
 
 # Setup Player 1
-player_1_ship = PlayerObject(player_1_ai.get_name(), images['p1'], 100, 300)
+player_1_image_name = player_1_ai.get_image()
+if player_1_image_name is not None:
+    player_1_image = pygame.image.load(player_1_image_name)
+    if player_1_image.get_rect().width != 26 or player_1_image.get_rect().height != 28:
+        print("Warning: %s's image is the wrong size, using default" % player_1_ai.get_name())
+        player_1_image = images['p1']
+else:
+    player_1_image = images['p1']
+
+player_1_ship = PlayerObject(player_1_ai.get_name(), player_1_image, 100, 300)
+
 
 # Setup Player 2
-player_2_ship = PlayerObject(player_2_ai.get_name(), images['p2'], 700, 300)
+player_2_image_name = player_2_ai.get_image()
+if player_2_image_name is not None:
+    player_2_image = pygame.image.load(player_2_image_name)
+    if player_2_image.get_rect().width != 26 or player_2_image.get_rect().height != 28:
+        print("Warning: %s's image is the wrong size, using default" % player_2_ai.get_name())
+        player_2_image = images['p2']
+else:
+    player_2_image = images['p2']
+
+player_2_ship = PlayerObject(player_2_ai.get_name(), player_2_image, 700, 300)
 
 state = States.pre
 seconds_passed = 0
@@ -439,8 +458,8 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("mouse at (%d, %d)" % event.pos)
+        # elif event.type == pygame.MOUSEBUTTONDOWN:
+        #     print("mouse at (%d, %d)" % event.pos)
 
     turn = True if (frame == 0 or frame == 15 or frame == 30 or frame == 45) else False
     update(turn)
