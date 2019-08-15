@@ -6,7 +6,11 @@ import importlib
 import sys
 import random
 import math
+import os.path
 import battlebotspublic
+
+MATCH_BEGIN_SECS = 3
+MATCH_SECS = 120
 
 # COLORS
 white = (255, 255, 255)
@@ -180,7 +184,7 @@ player_2_ai = p2_lib.MyBot()
 
 # Setup Player 1
 player_1_image_name = player_1_ai.get_image()
-if player_1_image_name is not None:
+if player_1_image_name is not None and os.path.exists(player_1_image_name):
     player_1_image = pygame.image.load(player_1_image_name)
     if player_1_image.get_rect().width != 26 or player_1_image.get_rect().height != 28:
         print("Warning: %s's image is the wrong size, using default" % player_1_ai.get_name())
@@ -193,7 +197,7 @@ player_1_ship = PlayerObject(player_1_ai.get_name(), player_1_image, 100, 300)
 
 # Setup Player 2
 player_2_image_name = player_2_ai.get_image()
-if player_2_image_name is not None:
+if player_2_image_name is not None and os.path.exists(player_2_image_name):
     player_2_image = pygame.image.load(player_2_image_name)
     if player_2_image.get_rect().width != 26 or player_2_image.get_rect().height != 28:
         print("Warning: %s's image is the wrong size, using default" % player_2_ai.get_name())
@@ -233,7 +237,7 @@ def player_turn(player, player_ai, other_player):
                                      enemy_health=other_player.health, enemy_muzzle_flash=other_player.fired_last_turn,
                                      my_torpedoes=player.torpedoes, my_phasers=player.phasers, my_x=player.x,
                                      my_y=player.y, my_direction=player.direction, my_speed=player.speed,
-                                     my_health=player.health, time_left=125-seconds_passed)
+                                     my_health=player.health, time_left=(MATCH_SECS+MATCH_BEGIN_SECS)-seconds_passed)
 
     # Send info to player AI & get back turn action
     action = player_ai.take_turn(info)
@@ -364,7 +368,7 @@ def update(time_for_player_turn):
 
     # Is time up for the match?
     if state == States.battle:
-        sec = 125 - seconds_passed
+        sec = (MATCH_SECS + MATCH_BEGIN_SECS) - seconds_passed
         if sec <= 0:
             if player_1_ship.health > player_2_ship.health:
                 state = States.player_1_wins
@@ -397,7 +401,7 @@ def draw_text(text, size, color,  x, y):
 def draw_start_countdown():
     global state
     msg = player_1_ai.get_name() + " vs " + player_2_ai.get_name()
-    countdown = 5 - seconds_passed
+    countdown = MATCH_BEGIN_SECS - seconds_passed
     if countdown > 0:
         draw_text(msg, 50, red, 400, 200)
         draw_text(str(countdown), 50, red, 400, 250)
@@ -426,7 +430,7 @@ def digital_time(seconds):
 def render():
     game_screen.fill((0, 0, 0))
     if state == States.battle:
-        seconds = 125 - seconds_passed
+        seconds = (MATCH_SECS + MATCH_BEGIN_SECS) - seconds_passed
         if seconds >= 10:
             draw_text(digital_time(seconds), 16, white, 400, 10)
         else:
@@ -472,10 +476,10 @@ while not done:
         frame = 0
         seconds_passed += 1
         # Play horn sound when match begins
-        if seconds_passed == 5:
+        if seconds_passed == MATCH_BEGIN_SECS:
             sounds['horn'].play()
         # Play ticking sounds when match is almost over
         if state == States.battle:
-            secs = 125 - seconds_passed
+            secs = (MATCH_SECS + MATCH_BEGIN_SECS) - seconds_passed
             if secs == 10:
                 sounds['bell'].play()
