@@ -7,10 +7,12 @@ import sys
 import random
 import math
 import os.path
+import copy
+import battlebotsconfig
 import battlebotspublic
 
-MATCH_BEGIN_SECS = 3
-MATCH_SECS = 120
+# Game configuration
+config = battlebotsconfig.Config()
 
 # COLORS
 white = (255, 255, 255)
@@ -57,20 +59,20 @@ class GameObject:
     def update(self):
         old_x = self.x
         old_y = self.y
-        distance = self.speed * (1 / 60)
+        distance = self.speed / config.match.tick_rate
         self.x = self._cosTheta * distance + self.x
         self.y = self.y - self._sinTheta * distance
 
         if self.obj_type == ObjectType.ship:
             if (self.x < 0 + self.image.get_rect().width / 2 or
-                    self.x > 800 - self.image.get_rect().width / 2 or
+                    self.x > config.arena.width - self.image.get_rect().width / 2 or
                     self.y < 0 + self.image.get_rect().height / 2 or
-                    self.y > 600 - self.image.get_rect().height / 2):
+                    self.y > config.arena.height - self.image.get_rect().height / 2):
                 self.x = old_x
                 self.y = old_y
                 self.speed = 0
         elif self.obj_type == ObjectType.bullet:
-            if self.x < -10 or self.x > 810 or self.y < -10 or self.y > 610:
+            if self.x < -10 or self.x > config.arena.width + 10 or self.y < -10 or self.y > config.arena.height + 10:
                 return True
 
         if self.ticks_before_removal > 0:
@@ -89,8 +91,8 @@ class GameObject:
         # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(render_x, render_y, width, height), 1)
 
     def collides_with(self, obj):
-        self_multiplier = 1.0 if self.obj_type == ObjectType.bullet else 0.8
-        obj_multiplier = 1.0 if obj.obj_type == ObjectType.bullet else 0.8
+        self_multiplier = 1.0 if self.obj_type == ObjectType.bullet else config.player.multiplier
+        obj_multiplier = 1.0 if obj.obj_type == ObjectType.bullet else config.player.multiplier
         width1 = self.image.get_rect().width * self_multiplier
         height1 = self.image.get_rect().height * self_multiplier
         width2 = obj.image.get_rect().width * obj_multiplier
@@ -111,10 +113,10 @@ class GameObject:
 
 class PlayerObject(GameObject):
     def __init__(self, name, image, x, y):
-        GameObject.__init__(self, ObjectType.ship, image, 10, x, y, 0, 0)
+        GameObject.__init__(self, ObjectType.ship, image, config.player.health, x, y, 0, 0)
         self.name = name
-        self.torpedoes = 5
-        self.phasers = 5
+        self.torpedoes = config.player.torpedoes
+        self.phasers = config.player.phasers
         self.fired_last_turn = False
 
     def render(self, screen):
@@ -141,7 +143,7 @@ if len(sys.argv) != 3:
 pygame.init()
 pygame.display.set_caption('Battle Bots')
 
-game_screen = pygame.display.set_mode((800, 600))
+game_screen = pygame.display.set_mode((config.arena.width, config.arena.height))
 clock = pygame.time.Clock()
 
 # LOAD IMAGES & SOUNDS
@@ -152,6 +154,11 @@ images['b1'] = pygame.image.load('b1.png')
 images['torpedo'] = pygame.image.load('torpedo.png')
 images['e1'] = pygame.image.load('e1.png')
 images['e2'] = pygame.image.load('e2.png')
+
+config.phaser.width = images['b1'].get_rect().width
+config.phaser.height = images['b1'].get_rect().height
+config.photon.width = images['torpedo'].get_rect().width
+config.photon.height = images['torpedo'].get_rect().height
 
 sounds = dict()
 sounds['phaser'] = pygame.mixer.Sound('phaser.wav')
@@ -178,34 +185,34 @@ powerups = []
 effects = []
 
 p1_lib = importlib.import_module(sys.argv[1])
-player_1_ai = p1_lib.MyBot()
+player_1_ai = p1_lib.MyBot(copy.copy(config))
 p2_lib = importlib.import_module(sys.argv[2])
-player_2_ai = p2_lib.MyBot()
+player_2_ai = p2_lib.MyBot(copy.copy(config))
 
 # Setup Player 1
 player_1_image_name = player_1_ai.get_image()
 if player_1_image_name is not None and os.path.exists(player_1_image_name):
     player_1_image = pygame.image.load(player_1_image_name)
-    if player_1_image.get_rect().width != 26 or player_1_image.get_rect().height != 28:
+    if player_1_image.get_rect().width != config.player.width or player_1_image.get_rect().height != config.player.height:
         print("Warning: %s's image is the wrong size, using default" % player_1_ai.get_name())
         player_1_image = images['p1']
 else:
     player_1_image = images['p1']
 
-player_1_ship = PlayerObject(player_1_ai.get_name(), player_1_image, 100, 300)
+player_1_ship = PlayerObject(player_1_ai.get_name(), player_1_image, config.arena.start1x, config.arena.start1y)
 
 
 # Setup Player 2
 player_2_image_name = player_2_ai.get_image()
 if player_2_image_name is not None and os.path.exists(player_2_image_name):
     player_2_image = pygame.image.load(player_2_image_name)
-    if player_2_image.get_rect().width != 26 or player_2_image.get_rect().height != 28:
+    if player_2_image.get_rect().width != config.player.width or player_2_image.get_rect().height != config.player.height:
         print("Warning: %s's image is the wrong size, using default" % player_2_ai.get_name())
         player_2_image = images['p2']
 else:
     player_2_image = images['p2']
 
-player_2_ship = PlayerObject(player_2_ai.get_name(), player_2_image, 700, 300)
+player_2_ship = PlayerObject(player_2_ai.get_name(), player_2_image, config.arena.start2x, config.arena.start2y)
 
 state = States.pre
 seconds_passed = 0
@@ -237,7 +244,7 @@ def player_turn(player, player_ai, other_player):
                                      enemy_health=other_player.health, enemy_muzzle_flash=other_player.fired_last_turn,
                                      my_torpedoes=player.torpedoes, my_phasers=player.phasers, my_x=player.x,
                                      my_y=player.y, my_direction=player.direction, my_speed=player.speed,
-                                     my_health=player.health, time_left=(MATCH_SECS+MATCH_BEGIN_SECS)-seconds_passed)
+                                     my_health=player.health, time_left=(config.match.match_secs+config.match.count_secs)-seconds_passed)
 
     # Send info to player AI & get back turn action
     action = player_ai.take_turn(info)
@@ -247,25 +254,25 @@ def player_turn(player, player_ai, other_player):
 # PROCESS THE PLAYER'S ACTIONS
 def process_player_action(action, player, player_bullets):
     action.speed = 0 if action.speed < 0 else action.speed
-    action.speed = 150 if action.speed > 150 else action.speed
+    action.speed = config.player.max_speed if action.speed > config.player.max_speed else action.speed
     player.set_direction(action.direction)
     player.speed = action.speed
     if action.fire_phaser and player.phasers >= 1:
-        bullet = GameObject(ObjectType.bullet, images['b1'], 1, player.x, player.y, action.fire_direction, 400)
+        bullet = GameObject(ObjectType.bullet, images['b1'], config.phaser.damage, player.x, player.y, action.fire_direction, config.phaser.speed)
         player_bullets.append(bullet)
         player.phasers -= 1
         player.fired_last_turn = True
         sounds['phaser'].play()
     elif action.fire_torpedo and player.torpedoes > 0:
-        bullet = GameObject(ObjectType.bullet, images['torpedo'], 5, player.x, player.y, action.fire_direction, 300)
+        bullet = GameObject(ObjectType.bullet, images['torpedo'], config.photon.damage, player.x, player.y, action.fire_direction, config.photon.speed)
         player_bullets.append(bullet)
         player.torpedoes -= 1
         player.fired_last_turn = True
         sounds['torpedo'].play()
     else:
         player.fired_last_turn = False
-    # Player regenerates phaser energy 1 per second (or 0.25 per quarter second)
-    player.phasers += 0.25
+    # Player regenerates phaser energy (default is 1 per second)
+    player.phasers += config.player.phaser_charge
 
 
 # UPDATE OBJECTS, CALCULATE COLLISIONS, UPDATE GAME STATE
@@ -368,7 +375,7 @@ def update(time_for_player_turn):
 
     # Is time up for the match?
     if state == States.battle:
-        sec = (MATCH_SECS + MATCH_BEGIN_SECS) - seconds_passed
+        sec = (config.match.match_secs + config.match.count_secs) - seconds_passed
         if sec <= 0:
             if player_1_ship.health > player_2_ship.health:
                 state = States.player_1_wins
@@ -401,12 +408,14 @@ def draw_text(text, size, color,  x, y):
 def draw_start_countdown():
     global state
     msg = player_1_ai.get_name() + " vs " + player_2_ai.get_name()
-    countdown = MATCH_BEGIN_SECS - seconds_passed
+    countdown = config.match.count_secs - seconds_passed
+    msg_x = config.arena.width // 2
+    msg_y = config.arena.height // 3
     if countdown > 0:
-        draw_text(msg, 50, red, 400, 200)
-        draw_text(str(countdown), 50, red, 400, 250)
+        draw_text(msg, 50, red, msg_x, msg_y)
+        draw_text(str(countdown), 50, red, msg_x, msg_y + 50)
     elif countdown == 0:
-        draw_text("Begin", 50, red, 400, 200)
+        draw_text("Begin", 50, red, msg_x, msg_y)
     else:
         state = States.battle
 
@@ -417,7 +426,7 @@ def draw_outcome():
         msg = player_1_ai.get_name() + " wins!"
     elif state == States.player_2_wins:
         msg = player_2_ai.get_name() + " wins!"
-    draw_text(msg, 50, blue, 400, 200)
+    draw_text(msg, 50, blue, config.arena.width // 2, config.arena.height // 3)
 
 
 def digital_time(seconds):
@@ -430,12 +439,12 @@ def digital_time(seconds):
 def render():
     game_screen.fill((0, 0, 0))
     if state == States.battle:
-        seconds = (MATCH_SECS + MATCH_BEGIN_SECS) - seconds_passed
+        seconds = (config.match.match_secs + config.match.count_secs) - seconds_passed
         if seconds >= 10:
-            draw_text(digital_time(seconds), 16, white, 400, 10)
+            draw_text(digital_time(seconds), 16, white, config.arena.width // 2, 10)
         else:
             if quarter_seconds_passed % 2 == 0:
-                draw_text(digital_time(seconds), 16, white, 400, 10)
+                draw_text(digital_time(seconds), 16, white, config.arena.width // 2, 10)
     if player_1_ship.health > 0:
         player_1_ship.render(game_screen)
     if player_2_ship.health > 0:
@@ -465,21 +474,21 @@ while not done:
         # elif event.type == pygame.MOUSEBUTTONDOWN:
         #     print("mouse at (%d, %d)" % event.pos)
 
-    turn = True if (frame == 0 or frame == 15 or frame == 30 or frame == 45) else False
+    turn = frame % config.match.ticks_per_turn == 0
     update(turn)
     render()
-    clock.tick(60)
+    clock.tick(config.match.tick_rate)
     frame += 1
-    if frame == 15 or frame == 30 or frame == 45 or frame == 60:
+    if frame % config.match.ticks_per_turn == 0:
         quarter_seconds_passed += 1
-    if frame == 60:
+    if frame == config.match.tick_rate:
         frame = 0
         seconds_passed += 1
         # Play horn sound when match begins
-        if seconds_passed == MATCH_BEGIN_SECS:
+        if seconds_passed == config.match.count_secs:
             sounds['horn'].play()
         # Play ticking sounds when match is almost over
         if state == States.battle:
-            secs = (MATCH_SECS + MATCH_BEGIN_SECS) - seconds_passed
-            if secs == 10:
+            secs = (config.match.match_secs + config.match.count_secs) - seconds_passed
+            if secs == config.match.bell_secs:
                 sounds['bell'].play()
