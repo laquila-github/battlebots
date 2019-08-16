@@ -2,8 +2,9 @@ import battlebotspublic
 
 
 class MyBot(battlebotspublic.PlayerBot):
-    def __init__(self):
+    def __init__(self, config):
         self.seconds = 0
+        self.config = config
 
     def get_name(self):
         return "Daniel"
@@ -14,7 +15,7 @@ class MyBot(battlebotspublic.PlayerBot):
         direction = 90
         if self.seconds < 2:
             direction = 270
-        self.seconds += 0.25
+        self.seconds += self.config.match.ticks_per_turn / self.config.match.tick_rate
         if self.seconds >= 4:
             self.seconds = 0
         action = battlebotspublic.TurnAction(direction, 100, e_dir, True, False)
