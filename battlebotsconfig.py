@@ -5,6 +5,7 @@
 
 import configparser
 
+
 class MatchConfig:
     """
     Match-specific configuration options, namely:
@@ -24,6 +25,7 @@ class MatchConfig:
         self.bell_secs = int(config['MATCH']['BellSecs'])
         self.tick_rate = int(config['MATCH']['TickRate'])
         self.ticks_per_turn = int(config['MATCH']['TicksPerTurn'])
+
 
 class ArenaConfig:
     """
@@ -45,6 +47,7 @@ class ArenaConfig:
         self.start1y = int(config['ARENA']['Start1Y'])
         self.start2x = int(config['ARENA']['Start2X'])
         self.start2y = int(config['ARENA']['Start2Y'])
+
 
 class PlayerConfig:
     """
@@ -72,6 +75,7 @@ class PlayerConfig:
         self.max_speed = int(config['PLAYER']['MaxSpeed'])
         self.phaser_charge = float(config['PLAYER']['PhaserCharge'])
 
+
 class PhaserConfig:
     """
     Phaser-specific configuration options, namely:
@@ -89,7 +93,8 @@ class PhaserConfig:
         self.damage = int(config['PHASER']['Damage'])
         self.speed = int(config['PHASER']['Speed'])
 
-class PhotonConfig:
+
+class TorpedoConfig:
     """
     Photon torpedo-specific configuration options, namely:
     - width: the width of a photon torpedo
@@ -103,8 +108,9 @@ class PhotonConfig:
     def __init__(self, config):
         self.width = 10
         self.height = 10
-        self.damage = int(config['PHOTON']['Damage'])
-        self.speed = int(config['PHOTON']['Speed'])
+        self.damage = int(config['TORPEDO']['Damage'])
+        self.speed = int(config['TORPEDO']['Speed'])
+
 
 class Config:
     """
@@ -113,10 +119,10 @@ class Config:
     - arena: arena-specific configuration
     - player: player-specific configuration
     - phaser: phaser-specific configuration
-    - photon: photon torpedo-specific configuration
+    - torpedo: photon torpedo-specific configuration
     """
 
-    __slots__ = ["match", "arena", "player", "phaser", "photon"]
+    __slots__ = ["match", "arena", "player", "phaser", "torpedo"]
 
     def __init__(self):
         config = configparser.ConfigParser()
@@ -125,4 +131,4 @@ class Config:
         self.arena = ArenaConfig(config)
         self.player = PlayerConfig(config)
         self.phaser = PhaserConfig(config)
-        self.photon = PhotonConfig(config)
+        self.torpedo = TorpedoConfig(config)

@@ -157,8 +157,8 @@ images['e2'] = pygame.image.load('e2.png')
 
 config.phaser.width = images['b1'].get_rect().width
 config.phaser.height = images['b1'].get_rect().height
-config.photon.width = images['torpedo'].get_rect().width
-config.photon.height = images['torpedo'].get_rect().height
+config.torpedo.width = images['torpedo'].get_rect().width
+config.torpedo.height = images['torpedo'].get_rect().height
 
 sounds = dict()
 sounds['phaser'] = pygame.mixer.Sound('phaser.wav')
@@ -264,7 +264,7 @@ def process_player_action(action, player, player_bullets):
         player.fired_last_turn = True
         sounds['phaser'].play()
     elif action.fire_torpedo and player.torpedoes > 0:
-        bullet = GameObject(ObjectType.bullet, images['torpedo'], config.photon.damage, player.x, player.y, action.fire_direction, config.photon.speed)
+        bullet = GameObject(ObjectType.bullet, images['torpedo'], config.torpedo.damage, player.x, player.y, action.fire_direction, config.torpedo.speed)
         player_bullets.append(bullet)
         player.torpedoes -= 1
         player.fired_last_turn = True

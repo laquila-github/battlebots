@@ -66,6 +66,9 @@ class PlayerBot(ABC):
         distance = math.sqrt(((enemy_x - my_x) ** 2) + ((enemy_y - my_y) ** 2))
         return enemy_direction, distance
 
+    def __init__(self, config):
+        self.config = config
+
     @abstractmethod
     def take_turn(self, info):
         return None
