@@ -130,6 +130,34 @@ class PlayerObject(GameObject):
             pygame.draw.line(screen, green, (self.x - 10, self.y + 27), (self.x - 10 + self.health * 2, self.y + 27), 2)
 
 
+def get_image_for_bot(image_name, bot_module_name):
+    if image_name is None:
+        return None
+
+    # Try loading the image name returned from bot.
+    if os.path.exists(image_name):
+        image = pygame.image.load(image_name)
+        if image.get_rect().width == config.player.width and image.get_rect().height == config.player.height:
+            return image
+
+    # Try seeing if it's in the directory where the bot module was loaded from.
+    mlist = bot_module_name.split(".")
+    mlist.pop()
+    if len(mlist) > 0:
+        another_path = ""
+        for e in mlist:
+            another_path += e
+            another_path += "/"
+        another_path += image_name
+        if os.path.exists(another_path):
+            image = pygame.image.load(another_path)
+            if image.get_rect().width == config.player.width or image.get_rect().height == config.player.height:
+                return image
+
+    print("Unable to find correct size image %s for bot %s, using default" % image_name, bot_module_name)
+    return None
+
+
 # *********************
 # MAIN EXECUTION BEGINS
 # *********************
@@ -191,27 +219,16 @@ player_2_ai = p2_lib.MyBot(copy.copy(config))
 
 # Setup Player 1
 player_1_image_name = player_1_ai.get_image()
-if player_1_image_name is not None and os.path.exists(player_1_image_name):
-    player_1_image = pygame.image.load(player_1_image_name)
-    if player_1_image.get_rect().width != config.player.width or player_1_image.get_rect().height != config.player.height:
-        print("Warning: %s's image is the wrong size, using default" % player_1_ai.get_name())
-        player_1_image = images['p1']
-else:
+player_1_image = get_image_for_bot(player_1_image_name, sys.argv[1])
+if player_1_image is None:
     player_1_image = images['p1']
-
 player_1_ship = PlayerObject(player_1_ai.get_name(), player_1_image, config.arena.start1x, config.arena.start1y)
-
 
 # Setup Player 2
 player_2_image_name = player_2_ai.get_image()
-if player_2_image_name is not None and os.path.exists(player_2_image_name):
-    player_2_image = pygame.image.load(player_2_image_name)
-    if player_2_image.get_rect().width != config.player.width or player_2_image.get_rect().height != config.player.height:
-        print("Warning: %s's image is the wrong size, using default" % player_2_ai.get_name())
-        player_2_image = images['p2']
-else:
+player_2_image = get_image_for_bot(player_2_image_name, sys.argv[2])
+if player_2_image is None:
     player_2_image = images['p2']
-
 player_2_ship = PlayerObject(player_2_ai.get_name(), player_2_image, config.arena.start2x, config.arena.start2y)
 
 state = States.pre
@@ -466,6 +483,7 @@ def render():
 
 # GAME LOOP
 frame = 0
+exit_delay = config.match.exit_delay
 done = False
 while not done:
     for event in pygame.event.get():
@@ -492,3 +510,16 @@ while not done:
             secs = (config.match.match_secs + config.match.count_secs) - seconds_passed
             if secs == config.match.bell_secs:
                 sounds['bell'].play()
+        elif state > States.battle:
+            exit_delay -= 1
+            if exit_delay <= 0:
+                done = True
+
+exit_value = 0
+if state == States.player_1_wins:
+    exit_value = 1
+elif state == States.player_2_wins:
+    exit_value = 2
+elif state == States.draw:
+    exit_value = 3
+sys.exit(exit_value)

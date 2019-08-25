@@ -17,7 +17,7 @@ class MatchConfig:
     """
 
     __slots__ = ["count_secs", "match_secs", "bell_secs", "tick_rate",
-                 "ticks_per_turn"]
+                 "ticks_per_turn", "exit_delay"]
 
     def __init__(self, config):
         self.count_secs = int(config['MATCH']['CountSecs'])
@@ -25,6 +25,7 @@ class MatchConfig:
         self.bell_secs = int(config['MATCH']['BellSecs'])
         self.tick_rate = int(config['MATCH']['TickRate'])
         self.ticks_per_turn = int(config['MATCH']['TicksPerTurn'])
+        self.exit_delay = int(config['MATCH']['ExitDelay'])
 
 
 class ArenaConfig:
@@ -119,7 +120,7 @@ class Config:
     - arena: arena-specific configuration
     - player: player-specific configuration
     - phaser: phaser-specific configuration
-    - torpedo: photon torpedo-specific configuration
+    - torpedo: torpedo-specific configuration
     """
 
     __slots__ = ["match", "arena", "player", "phaser", "torpedo"]

@@ -21,7 +21,7 @@ Note: Most of the below 'magic numbers' are just the default and can be configur
     a. What direction and speed the bot wants to go.
     b. If the bot should fire a weapon and in what direction.
 6. A bot starts with a health of 10. When it reaches 0 it is dead and the match ends.
-7. A match consists of two bots for 2 minutes. At the end of 2 minutes the bot with the most health wins.
+7. A match consists of two bots for 1 minute. At the end of 1 minute1 the bot with the most health wins.
     a. Player 1 starts on the left of the screen (100,300)
     b. Player 2 starts on the right of the screen (700,300)
     c. If the bots collide the one with the most health will destroy the other, same health they're both destroyed.
