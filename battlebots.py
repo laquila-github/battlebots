@@ -154,7 +154,7 @@ def get_image_for_bot(image_name, bot_module_name):
             if image.get_rect().width == config.player.width or image.get_rect().height == config.player.height:
                 return image
 
-    print("Unable to find correct size image %s for bot %s, using default" % image_name, bot_module_name)
+    print("Unable to find correct size image %s for bot %s, using default" % (image_name, bot_module_name))
     return None
 
 
